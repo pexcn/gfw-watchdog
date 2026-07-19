@@ -148,21 +148,25 @@ func TranslateShortArgs(in []string) []string {
 }
 
 func PrintUsage(w io.Writer) {
-	fmt.Fprintln(w, `Usage: gfw-watchdog [options]
-
-Options:
-  -i, --ip host[:item,...]       Probe target (repeatable, required)
-  -c, --control host[:item,...]  Control target (repeatable)
-  -I, --interval MIN-MAX         Normal probe interval (default 20s-40s)
-  -b, --blocked-cooldown MIN-MAX Blocked probe interval (default 10h-20h)
-  -r, --rise N                   Successes required for recovery (default 2)
-  -f, --fall N                   Failures required for blocking (default 3)
-  -t, --timeout DURATION         Per-probe timeout (default 5s)
-  -w, --webhook SPEC             Webhook target (repeatable)
-  -h, --help                     Show this help
-
-Target items: icmp, PORT, PORT/tcp, or PORT/udp.
-
-Environment variables:
-  WEBHOOKS  YAML-style list or newline-separated key=value webhook entries.`)
+	const optionWidth = 33
+	fmt.Fprintln(w, "Monitor IP reachability through TCP/UDP/ICMP, and report GFW blocking state changes.")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Usage:")
+	fmt.Fprintln(w, "  gfw-watchdog --ip host[:item,...] [--ip ...] [options]")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Options:")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-i, --ip host[:item,...]", "Probe target (repeatable, required)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp.")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-c, --control host[:item,...]", "Control target (repeatable)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-I, --interval MIN-MAX", "Normal probe interval (default 20s-40s)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-b, --blocked-cooldown MIN-MAX", "Blocked probe interval (default 10h-20h)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-r, --rise N", "Successes required for recovery (default 2)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-f, --fall N", "Failures required for blocking (default 3)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-t, --timeout DURATION", "Per-probe timeout (default 5s)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-w, --webhook SPEC", "Webhook target (repeatable)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Format: type=telegram|wecom,url=URL[,name=NAME]")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-h, --help", "Show this help message and exit")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Environment variables:")
+	fmt.Fprintln(w, "  WEBHOOKS  YAML-style list or newline-separated key=value webhook entries")
 }
