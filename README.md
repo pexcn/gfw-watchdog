@@ -171,7 +171,7 @@ HOST[@ipv4|@ipv6][:item1,item2,...]
 |---|---:|---|
 | `-H`, `--host spec` | 必填 | 普通探测主机，可重复 |
 | `-c`, `--control spec` | 无 | 对照目标，可重复 |
-| `-I`, `--interval min-max` | `60s-120s` | 正常状态的随机探测间隔 |
+| `-i`, `--interval min-max` | `60s-120s` | 正常状态的随机探测间隔 |
 | `-b`, `--blocked-cooldown min-max` | `12h-24h` | 普通目标确认不可达后的随机探测间隔 |
 | `-r`, `--rise n` | `1` | 判定恢复所需的连续成功次数 |
 | `-f`, `--fall n` | `3` | 判定不可达所需的连续失败次数 |

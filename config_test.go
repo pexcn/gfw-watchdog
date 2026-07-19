@@ -6,7 +6,7 @@ import (
 )
 
 func TestTranslateShortArgs(t *testing.T) {
-	in := []string{"-Hexample.com:80", "-I=1s-2s", "-r", "3", "--", "-c", "x"}
+	in := []string{"-Hexample.com:80", "-i=1s-2s", "-r", "3", "--", "-c", "x"}
 	want := []string{"--host", "example.com:80", "--interval=1s-2s", "--rise", "3", "--", "-c", "x"}
 	if got := TranslateShortArgs(in); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %#v, want %#v", got, want)

@@ -113,7 +113,7 @@ func TranslateShortArgs(in []string) []string {
 	mapping := map[string]string{
 		"H": "host",
 		"c": "control",
-		"I": "interval",
+		"i": "interval",
 		"b": "blocked-cooldown",
 		"r": "rise",
 		"f": "fall",
@@ -167,7 +167,7 @@ func PrintUsage(w io.Writer) {
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-H, --host spec", "Probe IP or domain target (repeatable, required)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-c, --control spec", "Control IP or domain target (repeatable)")
-	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-I, --interval min-max", "Normal probe interval (default 60s-120s)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-i, --interval min-max", "Normal probe interval (default 60s-120s)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-b, --blocked-cooldown min-max", "Blocked probe interval (default 12h-24h)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-r, --rise n", "Successes required for recovery (default 1)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-f, --fall n", "Failures required for blocking (default 3)")
