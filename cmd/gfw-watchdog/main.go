@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -213,9 +214,9 @@ func (r *monitorRegistry) monitor(ctx context.Context, monitored *monitoredTarge
 		sample := r.probers.Probe(probeCtx, monitored.target)
 		lastErr = sample.Err
 		if sample.Success {
-			log.Printf("probe success target=%s rtt=%s control=%t", monitored.target.Key(), sample.RTT, monitored.target.IsControl)
+			log.Printf("probe success %s rtt=%s", formatTargetLog(monitored.target), sample.RTT)
 		} else {
-			log.Printf("probe failed target=%s error=%v control=%t", monitored.target.Key(), sample.Err, monitored.target.IsControl)
+			log.Printf("probe failed %s error=%v", formatTargetLog(monitored.target), sample.Err)
 		}
 		return sample.Success, ctx.Err() == nil
 	}
@@ -229,7 +230,7 @@ func (r *monitorRegistry) monitor(ctx context.Context, monitored *monitoredTarge
 		}
 		states, controlKeys := r.snapshot(monitored.target.IP.To4() == nil)
 		event := makeEvent(monitored.target, monitored.state, to, lastErr, states, controlKeys)
-		log.Printf("state changed target=%s event=%s", monitored.target.Key(), event.Event)
+		log.Printf("state changed %s event=%s", formatTargetLog(monitored.target), event.Event)
 		r.notifier.Publish(event)
 	}
 	scheduler.MonitorTarget(ctx, monitored.state, r.intervals, check, onResult)
@@ -376,6 +377,19 @@ func mergeItems(existing, added []target.ProbeItem) []target.ProbeItem {
 		}
 	}
 	return result
+}
+
+func formatTargetLog(t target.Target) string {
+	var fields []string
+	if t.Host != "" {
+		fields = append(fields, "host="+t.Host)
+	}
+	fields = append(fields, "ip="+t.IP.String(), "protocol="+t.Kind.String())
+	if t.Port > 0 {
+		fields = append(fields, fmt.Sprintf("port=%d", t.Port))
+	}
+	fields = append(fields, fmt.Sprintf("control=%t", t.IsControl))
+	return strings.Join(fields, " ")
 }
 
 func makeEvent(t target.Target, state *tracker.TargetState, next tracker.State, probeErr error, states map[string]*tracker.TargetState, controlKeys []string) webhook.Event {
