@@ -35,9 +35,7 @@ func main() {
 	}
 	cfg, err := watchdog.ParseConfig(watchdog.TranslateShortArgs(os.Args[1:]), os.Getenv("WEBHOOKS"))
 	if err != nil {
-		log.Printf("configuration error: %v", err)
-		watchdog.PrintUsage(os.Stdout)
-		os.Exit(2)
+		log.Fatal(err)
 	}
 	if err := run(cfg); err != nil {
 		log.Fatal(err)

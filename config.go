@@ -110,7 +110,16 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 }
 
 func TranslateShortArgs(in []string) []string {
-	mapping := map[string]string{"i": "ip", "c": "control", "I": "interval", "b": "blocked-cooldown", "r": "rise", "f": "fall", "t": "timeout", "w": "webhook"}
+	mapping := map[string]string{
+		"i": "ip",
+		"c": "control",
+		"I": "interval",
+		"b": "blocked-cooldown",
+		"r": "rise",
+		"f": "fall",
+		"t": "timeout",
+		"w": "webhook",
+	}
 	var out []string
 	for idx := 0; idx < len(in); idx++ {
 		a := in[idx]
@@ -156,7 +165,7 @@ func PrintUsage(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Options:")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-i, --ip host[:item,...]", "Probe target (repeatable, required)")
-	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp.")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-c, --control host[:item,...]", "Control target (repeatable)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-I, --interval MIN-MAX", "Normal probe interval (default 60s-120s)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-b, --blocked-cooldown MIN-MAX", "Blocked probe interval (default 12h-24h)")
