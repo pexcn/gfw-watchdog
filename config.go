@@ -52,6 +52,7 @@ type Config struct {
 	Targets         []target.Spec
 	Controls        []target.Spec
 	Interval        scheduler.DurationRange
+	FailureRetry    scheduler.DurationRange
 	BlockedCooldown scheduler.DurationRange
 	Rise            int
 	Fall            int
@@ -65,11 +66,13 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 	var targets, controls specList
 	var webhookFlags stringList
 	interval := durationRangeValue{value: scheduler.DurationRange{Min: 60 * time.Second, Max: 120 * time.Second}}
+	failureRetry := durationRangeValue{value: scheduler.DurationRange{Min: 5 * time.Second, Max: 10 * time.Second}}
 	cooldown := durationRangeValue{value: scheduler.DurationRange{Min: 12 * time.Hour, Max: 24 * time.Hour}}
 	var cfg Config
 	fs.Var(&targets, "host", "probe target")
 	fs.Var(&controls, "control", "control target")
 	fs.Var(&interval, "interval", "normal interval range")
+	fs.Var(&failureRetry, "failure-retry", "failure confirmation retry range")
 	fs.Var(&cooldown, "blocked-cooldown", "blocked cooldown range")
 	fs.IntVar(&cfg.Rise, "rise", 1, "success threshold")
 	fs.IntVar(&cfg.Fall, "fall", 3, "failure threshold")
@@ -105,6 +108,7 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 	cfg.Targets = targets
 	cfg.Controls = controls
 	cfg.Interval = interval.value
+	cfg.FailureRetry = failureRetry.value
 	cfg.BlockedCooldown = cooldown.value
 	return cfg, nil
 }
@@ -114,6 +118,7 @@ func TranslateShortArgs(in []string) []string {
 		"H": "host",
 		"c": "control",
 		"i": "interval",
+		"F": "failure-retry",
 		"b": "blocked-cooldown",
 		"r": "rise",
 		"f": "fall",
@@ -168,6 +173,7 @@ func PrintUsage(w io.Writer) {
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-c, --control spec", "Control IP or domain target (repeatable)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-i, --interval min-max", "Normal probe interval (default 60s-120s)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-F, --failure-retry min-max", "Failure retry interval (default 5s-10s)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-b, --blocked-cooldown min-max", "Blocked probe interval (default 12h-24h)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-r, --rise n", "Successes required for recovery (default 1)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-f, --fall n", "Failures required for blocking (default 3)")

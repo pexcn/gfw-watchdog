@@ -34,6 +34,7 @@ unknown -> ok <-> blocked
 ```
 
 - 连续失败达到 `--fall` 后进入 `blocked`，默认需要 3 次。
+- 首次失败后，在达到 `--fall` 前使用 `--failure-retry` 的短随机间隔快速确认；任意一次成功都会清零连续失败并恢复正常间隔。
 - 连续成功达到 `--rise` 后进入 `ok`，默认需要 1 次。
 - 从 `unknown` 首次确定状态只建立基线，不发送通知。
 - 普通目标持续处于 `blocked` 时使用 `--blocked-cooldown`。
@@ -172,6 +173,7 @@ HOST[@ipv4|@ipv6][:item1,item2,...]
 | `-H`, `--host spec` | 必填 | 普通探测主机，可重复 |
 | `-c`, `--control spec` | 无 | 对照目标，可重复 |
 | `-i`, `--interval min-max` | `60s-120s` | 正常状态的随机探测间隔 |
+| `-F`, `--failure-retry min-max` | `5s-10s` | 尚未确认不可达时的失败重试间隔 |
 | `-b`, `--blocked-cooldown min-max` | `12h-24h` | 普通目标确认不可达后的随机探测间隔 |
 | `-r`, `--rise n` | `1` | 判定恢复所需的连续成功次数 |
 | `-f`, `--fall n` | `3` | 判定不可达所需的连续失败次数 |

@@ -3,11 +3,12 @@ package watchdog
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestTranslateShortArgs(t *testing.T) {
-	in := []string{"-Hexample.com:80", "-i=1s-2s", "-r", "3", "--", "-c", "x"}
-	want := []string{"--host", "example.com:80", "--interval=1s-2s", "--rise", "3", "--", "-c", "x"}
+	in := []string{"-Hexample.com:80", "-i=1s-2s", "-F", "3s-10s", "-r", "3", "--", "-c", "x"}
+	want := []string{"--host", "example.com:80", "--interval=1s-2s", "--failure-retry", "3s-10s", "--rise", "3", "--", "-c", "x"}
 	if got := TranslateShortArgs(in); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %#v, want %#v", got, want)
 	}
@@ -52,5 +53,25 @@ func TestParseConfigValidation(t *testing.T) {
 	}
 	if _, err := ParseConfig([]string{"--ip", "1.2.3.4:80"}, ""); err == nil {
 		t.Fatal("expected removed --ip option to fail")
+	}
+}
+
+func TestFailureRetryConfig(t *testing.T) {
+	cfg, err := ParseConfig([]string{"--host", "1.2.3.4:80", "--failure-retry", "5s-15s"}, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.FailureRetry.Min != 5*time.Second || cfg.FailureRetry.Max != 15*time.Second {
+		t.Fatalf("unexpected failure retry: %#v", cfg.FailureRetry)
+	}
+}
+
+func TestFailureRetryDefault(t *testing.T) {
+	cfg, err := ParseConfig([]string{"--host", "1.2.3.4:80"}, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.FailureRetry.Min != 5*time.Second || cfg.FailureRetry.Max != 10*time.Second {
+		t.Fatalf("unexpected default failure retry: %#v", cfg.FailureRetry)
 	}
 }

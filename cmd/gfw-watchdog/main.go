@@ -82,7 +82,7 @@ func run(cfg watchdog.Config) error {
 	notifier := webhook.NewNotifier(cfg.Webhooks, &http.Client{Timeout: 10 * time.Second})
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	intervals := scheduler.IntervalConfig{Interval: cfg.Interval, BlockedCooldown: cfg.BlockedCooldown}
+	intervals := scheduler.IntervalConfig{Interval: cfg.Interval, FailureRetry: cfg.FailureRetry, BlockedCooldown: cfg.BlockedCooldown}
 	registry := newMonitorRegistry(ctx, cfg, intervals, probers, notifier)
 	for _, t := range append(target.Expand(cfg.Targets, false), target.Expand(cfg.Controls, true)...) {
 		registry.add(t, nil)

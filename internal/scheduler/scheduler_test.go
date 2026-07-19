@@ -26,14 +26,40 @@ func TestDurationRange(t *testing.T) {
 }
 
 func TestNextInterval(t *testing.T) {
-	cfg := IntervalConfig{Interval: DurationRange{Min: time.Second, Max: time.Second}, BlockedCooldown: DurationRange{Min: time.Hour, Max: time.Hour}}
+	cfg := IntervalConfig{
+		Interval:        DurationRange{Min: time.Second, Max: time.Second},
+		FailureRetry:    DurationRange{Min: time.Minute, Max: time.Minute},
+		BlockedCooldown: DurationRange{Min: time.Hour, Max: time.Hour},
+	}
 	s := &tracker.TargetState{}
-	s.Record(false, 2, 1)
+	s.Record(false, 2, 3)
+	if got := NextInterval(s, cfg); got != time.Minute {
+		t.Fatalf("got %s after unconfirmed failure", got)
+	}
+	s.Record(false, 2, 3)
+	s.Record(false, 2, 3)
 	if got := NextInterval(s, cfg); got != time.Hour {
 		t.Fatalf("got %s", got)
 	}
-	s.Record(true, 2, 1)
+	s.Record(true, 2, 3)
 	if got := NextInterval(s, cfg); got != time.Second {
 		t.Fatalf("got %s after success", got)
+	}
+}
+
+func TestControlUsesFailureRetryBeforeBlocked(t *testing.T) {
+	cfg := IntervalConfig{
+		Interval:        DurationRange{Min: time.Second, Max: time.Second},
+		FailureRetry:    DurationRange{Min: time.Minute, Max: time.Minute},
+		BlockedCooldown: DurationRange{Min: time.Hour, Max: time.Hour},
+	}
+	s := &tracker.TargetState{IsControl: true}
+	s.Record(false, 1, 2)
+	if got := NextInterval(s, cfg); got != time.Minute {
+		t.Fatalf("got %s after control failure", got)
+	}
+	s.Record(false, 1, 2)
+	if got := NextInterval(s, cfg); got != time.Second {
+		t.Fatalf("blocked control must return to normal interval, got %s", got)
 	}
 }

@@ -46,11 +46,15 @@ func (r DurationRange) Sample() time.Duration {
 
 type IntervalConfig struct {
 	Interval        DurationRange
+	FailureRetry    DurationRange
 	BlockedCooldown DurationRange
 }
 
 func NextInterval(state *tracker.TargetState, cfg IntervalConfig) time.Duration {
-	current, consecutiveOK, _ := state.Snapshot()
+	current, consecutiveOK, consecutiveFail := state.Snapshot()
+	if current != tracker.StateBlocked && consecutiveFail > 0 {
+		return cfg.FailureRetry.Sample()
+	}
 	if !state.IsControl && current == tracker.StateBlocked && consecutiveOK == 0 {
 		return cfg.BlockedCooldown.Sample()
 	}
