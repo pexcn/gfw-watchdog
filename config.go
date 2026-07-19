@@ -67,7 +67,7 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 	interval := durationRangeValue{value: scheduler.DurationRange{Min: 60 * time.Second, Max: 120 * time.Second}}
 	cooldown := durationRangeValue{value: scheduler.DurationRange{Min: 12 * time.Hour, Max: 24 * time.Hour}}
 	var cfg Config
-	fs.Var(&targets, "ip", "probe target")
+	fs.Var(&targets, "host", "probe target")
 	fs.Var(&controls, "control", "control target")
 	fs.Var(&interval, "interval", "normal interval range")
 	fs.Var(&cooldown, "blocked-cooldown", "blocked cooldown range")
@@ -82,7 +82,7 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 		return Config{}, fmt.Errorf("unexpected positional arguments: %s", strings.Join(fs.Args(), " "))
 	}
 	if len(targets) == 0 {
-		return Config{}, fmt.Errorf("at least one --ip is required")
+		return Config{}, fmt.Errorf("at least one --host is required")
 	}
 	if cfg.Rise < 1 || cfg.Fall < 1 {
 		return Config{}, fmt.Errorf("--rise and --fall must be at least 1")
@@ -111,7 +111,7 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 
 func TranslateShortArgs(in []string) []string {
 	mapping := map[string]string{
-		"i": "ip",
+		"H": "host",
 		"c": "control",
 		"I": "interval",
 		"b": "blocked-cooldown",
@@ -161,10 +161,10 @@ func PrintUsage(w io.Writer) {
 	fmt.Fprintln(w, "Monitor IP reachability through TCP/UDP/ICMP, and report GFW blocking state changes.")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Usage:")
-	fmt.Fprintln(w, "  gfw-watchdog --ip host[@ipv4|@ipv6][:item,...] [--ip ...] [options]")
+	fmt.Fprintln(w, "  gfw-watchdog --host host[@ipv4|@ipv6][:item,...] [--host ...] [options]")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Options:")
-	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-i, --ip spec", "Probe IP or domain target (repeatable, required)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-H, --host spec", "Probe IP or domain target (repeatable, required)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-c, --control spec", "Control IP or domain target (repeatable)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-I, --interval min-max", "Normal probe interval (default 60s-120s)")

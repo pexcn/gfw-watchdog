@@ -93,14 +93,14 @@ make clean
 仅探测一个 IPv4 地址的 ICMP：
 
 ```bash
-gfw-watchdog --ip 203.0.113.10
+gfw-watchdog --host 203.0.113.10
 ```
 
 探测 TCP 端口并配置对照组：
 
 ```bash
 gfw-watchdog \
-  --ip 203.0.113.10:443/tcp \
+  --host 203.0.113.10:443/tcp \
   --control 192.0.2.10:443/tcp \
   --control 198.51.100.10:443/tcp
 ```
@@ -109,14 +109,14 @@ gfw-watchdog \
 
 ```bash
 gfw-watchdog \
-  --ip 203.0.113.10:443/tcp,9000/udp,icmp \
+  --host 203.0.113.10:443/tcp,9000/udp,icmp \
   --control 192.0.2.10:443/tcp,icmp \
   --control 198.51.100.10:443/tcp,icmp
 ```
 
 ## 目标语法
 
-`--ip` 和 `--control` 均可重复指定，格式为：
+`--host` 和 `--control` 均可重复指定，格式为：
 
 ```text
 HOST[@ipv4|@ipv6][:item1,item2,...]
@@ -134,18 +134,18 @@ HOST[@ipv4|@ipv6][:item1,item2,...]
 示例：
 
 ```text
---ip 1.1.1.1
---ip 1.1.1.1:icmp
---ip 1.1.1.1:80
---ip 1.1.1.1:80/tcp
---ip 1.1.1.1:9000/udp
---ip 1.1.1.1:80/tcp,80/udp
---ip 1.1.1.1:80,443,icmp
---ip [2001:db8::1]:443/tcp,9000/udp
---ip 2001:db8::1
---ip example.com:443/tcp
---ip example.com@ipv4:443/tcp
---ip example.com@ipv6:443/tcp
+--host 1.1.1.1
+--host 1.1.1.1:icmp
+--host 1.1.1.1:80
+--host 1.1.1.1:80/tcp
+--host 1.1.1.1:9000/udp
+--host 1.1.1.1:80/tcp,80/udp
+--host 1.1.1.1:80,443,icmp
+--host [2001:db8::1]:443/tcp,9000/udp
+--host 2001:db8::1
+--host example.com:443/tcp
+--host example.com@ipv4:443/tcp
+--host example.com@ipv6:443/tcp
 ```
 
 注意事项：
@@ -169,7 +169,7 @@ HOST[@ipv4|@ipv6][:item1,item2,...]
 
 | 参数 | 默认值 | 说明 |
 |---|---:|---|
-| `-i`, `--ip spec` | 必填 | 普通探测目标，可重复 |
+| `-H`, `--host spec` | 必填 | 普通探测主机，可重复 |
 | `-c`, `--control spec` | 无 | 对照目标，可重复 |
 | `-I`, `--interval min-max` | `60s-120s` | 正常状态的随机探测间隔 |
 | `-b`, `--blocked-cooldown min-max` | `12h-24h` | 普通目标确认不可达后的随机探测间隔 |
@@ -184,9 +184,9 @@ HOST[@ipv4|@ipv6][:item1,item2,...]
 短参数支持以下形式：
 
 ```text
--i VALUE
--iVALUE
--i=VALUE
+-H VALUE
+-HVALUE
+-H=VALUE
 ```
 
 ## TCP、UDP 与 ICMP 探测
@@ -210,7 +210,7 @@ echo-server -listen :9000
 然后在监控端配置：
 
 ```bash
-gfw-watchdog --ip 203.0.113.10:9000/udp
+gfw-watchdog --host 203.0.113.10:9000/udp
 ```
 
 echo-server 是通用的 UDP 回显服务，会原样返回收到的数据报。只完成客户端本地 UDP `send` 不能证明远端可达，测试时必须确认收到了内容完全一致的回显。
@@ -266,7 +266,7 @@ type=telegram|wecom,url=URL[,name=NAME]
 
 ```bash
 gfw-watchdog \
-  --ip 203.0.113.10:443 \
+  --host 203.0.113.10:443 \
   --webhook 'type=telegram,url=https://api.telegram.org/bot<TOKEN>/sendMessage?chat_id=<CHAT_ID>,name=telegram' \
   --webhook 'type=wecom,url=https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=<KEY>,name=wecom'
 ```

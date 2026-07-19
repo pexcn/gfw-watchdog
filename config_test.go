@@ -6,8 +6,8 @@ import (
 )
 
 func TestTranslateShortArgs(t *testing.T) {
-	in := []string{"-i1.2.3.4:80", "-I=1s-2s", "-r", "3", "--", "-c", "x"}
-	want := []string{"--ip", "1.2.3.4:80", "--interval=1s-2s", "--rise", "3", "--", "-c", "x"}
+	in := []string{"-Hexample.com:80", "-I=1s-2s", "-r", "3", "--", "-c", "x"}
+	want := []string{"--host", "example.com:80", "--interval=1s-2s", "--rise", "3", "--", "-c", "x"}
 	if got := TranslateShortArgs(in); !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %#v, want %#v", got, want)
 	}
@@ -38,16 +38,19 @@ func TestParseWebhookQuotedComma(t *testing.T) {
 
 func TestParseConfigValidation(t *testing.T) {
 	if _, err := ParseConfig(nil, ""); err == nil {
-		t.Fatal("expected missing --ip to fail")
+		t.Fatal("expected missing --host to fail")
 	}
-	if _, err := ParseConfig([]string{"--ip", "1.2.3.4:80", "--rise", "0"}, ""); err == nil {
+	if _, err := ParseConfig([]string{"--host", "1.2.3.4:80", "--rise", "0"}, ""); err == nil {
 		t.Fatal("expected zero rise to fail")
 	}
-	cfg, err := ParseConfig([]string{"--ip", "1.2.3.4:80", "--interval", "1s-2s"}, "")
+	cfg, err := ParseConfig([]string{"--host", "1.2.3.4:80", "--interval", "1s-2s"}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(cfg.Targets) != 1 || cfg.Interval.Min.String() != "1s" || cfg.Interval.Max.String() != "2s" {
 		t.Fatalf("unexpected config: %#v", cfg)
+	}
+	if _, err := ParseConfig([]string{"--ip", "1.2.3.4:80"}, ""); err == nil {
+		t.Fatal("expected removed --ip option to fail")
 	}
 }
