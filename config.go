@@ -64,14 +64,14 @@ func ParseConfig(args []string, webhooksEnv string) (Config, error) {
 	fs.SetOutput(io.Discard)
 	var targets, controls specList
 	var webhookFlags stringList
-	interval := durationRangeValue{value: scheduler.DurationRange{Min: 20 * time.Second, Max: 40 * time.Second}}
-	cooldown := durationRangeValue{value: scheduler.DurationRange{Min: 10 * time.Hour, Max: 20 * time.Hour}}
+	interval := durationRangeValue{value: scheduler.DurationRange{Min: 60 * time.Second, Max: 120 * time.Second}}
+	cooldown := durationRangeValue{value: scheduler.DurationRange{Min: 12 * time.Hour, Max: 24 * time.Hour}}
 	var cfg Config
 	fs.Var(&targets, "ip", "probe target")
 	fs.Var(&controls, "control", "control target")
 	fs.Var(&interval, "interval", "normal interval range")
 	fs.Var(&cooldown, "blocked-cooldown", "blocked cooldown range")
-	fs.IntVar(&cfg.Rise, "rise", 2, "success threshold")
+	fs.IntVar(&cfg.Rise, "rise", 1, "success threshold")
 	fs.IntVar(&cfg.Fall, "fall", 3, "failure threshold")
 	fs.DurationVar(&cfg.Timeout, "timeout", 5*time.Second, "probe timeout")
 	fs.Var(&webhookFlags, "webhook", "notification target")
@@ -158,9 +158,9 @@ func PrintUsage(w io.Writer) {
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-i, --ip host[:item,...]", "Probe target (repeatable, required)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "", "Items: icmp, PORT, PORT/tcp, or PORT/udp.")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-c, --control host[:item,...]", "Control target (repeatable)")
-	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-I, --interval MIN-MAX", "Normal probe interval (default 20s-40s)")
-	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-b, --blocked-cooldown MIN-MAX", "Blocked probe interval (default 10h-20h)")
-	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-r, --rise N", "Successes required for recovery (default 2)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-I, --interval MIN-MAX", "Normal probe interval (default 60s-120s)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-b, --blocked-cooldown MIN-MAX", "Blocked probe interval (default 12h-24h)")
+	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-r, --rise N", "Successes required for recovery (default 1)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-f, --fall N", "Failures required for blocking (default 3)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-t, --timeout DURATION", "Per-probe timeout (default 5s)")
 	fmt.Fprintf(w, "  %-*s %s\n", optionWidth, "-w, --webhook SPEC", "Webhook target (repeatable)")
