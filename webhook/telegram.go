@@ -30,9 +30,14 @@ func telegramChatID(webhookURL string) string {
 func telegramTextHTML(event Event) string {
 	lines := []string{
 		"<b>GFW " + html.EscapeString(strings.ToUpper(event.Event)) + "</b>",
-		"IP: <code>" + html.EscapeString(event.IP) + "</code>",
-		"Protocol: <code>" + html.EscapeString(strings.ToUpper(event.Protocol)) + "</code>",
 	}
+	if event.Host != "" {
+		lines = append(lines, "Host: <code>"+html.EscapeString(event.Host)+"</code>")
+	}
+	lines = append(lines,
+		"IP: <code>"+html.EscapeString(event.IP)+"</code>",
+		"Protocol: <code>"+html.EscapeString(strings.ToUpper(event.Protocol))+"</code>",
+	)
 	if event.Port > 0 {
 		lines = append(lines, "Port: <code>"+strconv.Itoa(event.Port)+"</code>")
 	}

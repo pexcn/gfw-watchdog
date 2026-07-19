@@ -33,12 +33,23 @@ type ProbeItem struct {
 	Port int
 }
 
+type Family int
+
+const (
+	FamilyAny Family = iota
+	FamilyIPv4
+	FamilyIPv6
+)
+
 type Spec struct {
-	IP    net.IP
-	Items []ProbeItem
+	Host   string
+	IP     net.IP
+	Family Family
+	Items  []ProbeItem
 }
 
 type Target struct {
+	Host      string
 	IP        net.IP
 	Kind      ProbeKind
 	Port      int
@@ -46,7 +57,7 @@ type Target struct {
 }
 
 func (t Target) Key() string {
-	return fmt.Sprintf("%s|%s|%d", t.IP.String(), t.Kind.String(), t.Port)
+	return fmt.Sprintf("%t|%s|%s|%s|%d", t.IsControl, t.Host, t.IP.String(), t.Kind.String(), t.Port)
 }
 
 func ParseSpec(s string) (Spec, error) {
@@ -75,19 +86,69 @@ func ParseSpec(s string) (Spec, error) {
 	if ip := net.ParseIP(s); ip != nil {
 		return Spec{IP: ip, Items: []ProbeItem{{Kind: ProbeICMP}}}, nil
 	}
-	host, itemsStr, err := net.SplitHostPort(s)
-	if err != nil {
-		return Spec{}, fmt.Errorf("invalid spec: %s", s)
+	hostPart, itemsStr := s, ""
+	if index := strings.IndexByte(s, ':'); index >= 0 {
+		if strings.IndexByte(s[index+1:], ':') >= 0 {
+			return Spec{}, fmt.Errorf("invalid spec: %s", s)
+		}
+		hostPart, itemsStr = s[:index], s[index+1:]
 	}
-	ip := net.ParseIP(host)
-	if ip == nil {
-		return Spec{}, fmt.Errorf("invalid ip: %s", host)
+	if ip := net.ParseIP(hostPart); ip != nil {
+		items, err := ParseItems(itemsStr)
+		if err != nil {
+			return Spec{}, err
+		}
+		return Spec{IP: ip, Items: items}, nil
 	}
-	items, err := ParseItems(itemsStr)
+	host, family, err := parseDomainHost(hostPart)
 	if err != nil {
 		return Spec{}, err
 	}
-	return Spec{IP: ip, Items: items}, nil
+	items := []ProbeItem{{Kind: ProbeICMP}}
+	if strings.Contains(s, ":") {
+		items, err = ParseItems(itemsStr)
+		if err != nil {
+			return Spec{}, err
+		}
+	}
+	return Spec{Host: host, Family: family, Items: items}, nil
+}
+
+func parseDomainHost(raw string) (string, Family, error) {
+	host := strings.ToLower(strings.TrimSuffix(raw, "."))
+	family := FamilyAny
+	if base, suffix, ok := strings.Cut(host, "@"); ok {
+		host = base
+		switch suffix {
+		case "ipv4":
+			family = FamilyIPv4
+		case "ipv6":
+			family = FamilyIPv6
+		default:
+			return "", FamilyAny, fmt.Errorf("invalid address family %q, want ipv4 or ipv6", suffix)
+		}
+	}
+	if !validDomain(host) {
+		return "", FamilyAny, fmt.Errorf("invalid host: %s", raw)
+	}
+	return host, family, nil
+}
+
+func validDomain(host string) bool {
+	if len(host) == 0 || len(host) > 253 || !strings.Contains(host, ".") {
+		return false
+	}
+	for _, label := range strings.Split(host, ".") {
+		if len(label) == 0 || len(label) > 63 || label[0] == '-' || label[len(label)-1] == '-' {
+			return false
+		}
+		for _, char := range label {
+			if (char < 'a' || char > 'z') && (char < '0' || char > '9') && char != '-' {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func ParseItems(s string) ([]ProbeItem, error) {
@@ -134,12 +195,25 @@ func Expand(specs []Spec, control bool) []Target {
 	var result []Target
 	seen := make(map[string]bool)
 	for _, spec := range specs {
+		if spec.IP == nil {
+			continue
+		}
 		for _, item := range spec.Items {
 			t := Target{IP: spec.IP, Kind: item.Kind, Port: item.Port, IsControl: control}
 			if !seen[t.Key()] {
 				result = append(result, t)
 				seen[t.Key()] = true
 			}
+		}
+	}
+	return result
+}
+
+func ExpandResolved(spec Spec, ips []net.IP, control bool) []Target {
+	var result []Target
+	for _, ip := range ips {
+		for _, item := range spec.Items {
+			result = append(result, Target{Host: spec.Host, IP: ip, Kind: item.Kind, Port: item.Port, IsControl: control})
 		}
 	}
 	return result

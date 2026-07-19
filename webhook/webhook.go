@@ -28,6 +28,7 @@ type Event struct {
 	Version             int    `json:"version"`
 	Event               string `json:"event"`
 	Timestamp           string `json:"timestamp"`
+	Host                string `json:"host,omitempty"`
 	IP                  string `json:"ip"`
 	Protocol            string `json:"protocol"`
 	Port                int    `json:"port,omitempty"`

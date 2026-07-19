@@ -22,9 +22,11 @@ func buildWecomPayload(_ Config, event Event) ([]byte, error) {
 func eventText(event Event) string {
 	lines := []string{
 		"GFW " + strings.ToUpper(event.Event),
-		"IP: " + event.IP,
-		"Protocol: " + strings.ToUpper(event.Protocol),
 	}
+	if event.Host != "" {
+		lines = append(lines, "Host: "+event.Host)
+	}
+	lines = append(lines, "IP: "+event.IP, "Protocol: "+strings.ToUpper(event.Protocol))
 	if event.Port > 0 {
 		lines = append(lines, "Port: "+strconv.Itoa(event.Port))
 	}

@@ -12,7 +12,7 @@ import (
 )
 
 func TestTelegramPayloadEscapesHTML(t *testing.T) {
-	body, err := buildTelegramPayload(Config{URL: "https://example.com/send?chat_id=42"}, Event{Event: "blocked", IP: "1.2.3.4", Protocol: "tcp", Reason: "a < b"})
+	body, err := buildTelegramPayload(Config{URL: "https://example.com/send?chat_id=42"}, Event{Event: "blocked", Host: "example.com", IP: "1.2.3.4", Protocol: "tcp", Reason: "a < b"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestTelegramPayloadEscapesHTML(t *testing.T) {
 	if err := json.Unmarshal(body, &payload); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(payload["text"], "a &lt; b") || payload["chat_id"] != "42" || payload["parse_mode"] != "HTML" {
+	if !strings.Contains(payload["text"], "a &lt; b") || !strings.Contains(payload["text"], "Host: <code>example.com</code>") || payload["chat_id"] != "42" || payload["parse_mode"] != "HTML" {
 		t.Fatalf("unexpected payload: %#v", payload)
 	}
 }

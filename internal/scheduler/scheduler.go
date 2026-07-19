@@ -57,9 +57,12 @@ func NextInterval(state *tracker.TargetState, cfg IntervalConfig) time.Duration 
 	return cfg.Interval.Sample()
 }
 
-func MonitorTarget(ctx context.Context, state *tracker.TargetState, cfg IntervalConfig, check func(context.Context) bool, onResult func(bool)) {
+func MonitorTarget(ctx context.Context, state *tracker.TargetState, cfg IntervalConfig, check func(context.Context) (bool, bool), onResult func(bool)) {
 	runOnce := func() {
-		onResult(check(ctx))
+		success, valid := check(ctx)
+		if valid {
+			onResult(success)
+		}
 	}
 	runOnce()
 	timer := time.NewTimer(NextInterval(state, cfg))
