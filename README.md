@@ -203,6 +203,8 @@ echo-server -listen :9000
 gfw-watchdog --ip 203.0.113.10:9000/udp
 ```
 
+echo-server 是通用的 UDP 回显服务，会原样返回收到的数据报。只完成客户端本地 UDP `send` 不能证明远端可达，测试时必须确认收到了内容完全一致的回显。
+
 > [!WARNING]
 > `echo-server` 不提供认证、加密、访问控制或速率限制。部署到公网时应使用防火墙仅允许监控端 IP 访问，避免形成公开 UDP 回显服务。
 
